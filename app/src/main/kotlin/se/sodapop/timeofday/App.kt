@@ -27,12 +27,12 @@ suspend fun main() {
     println("I will tick in ${formatRelativeTime(timeUntilNextHour)}")
 
     while (true) {
-        println("Current hour is currently ${LocalDateTime.now().hour}")
-        println("Next hour, the channel name will be ${getChannelName(LocalDateTime.now().hour + 1)}")
+        println("Current hour is currently ${ZonedDateTime.now(ZoneId.of("Europe/Stockholm")).hour}")
+        println("Next hour, the channel name will be ${getChannelName(ZonedDateTime.now(ZoneId.of("Europe/Stockholm")).hour + 1)}")
 
         ticker.receive()
 
-        val name = getChannelName(LocalDateTime.now().hour)
+        val name = getChannelName(ZonedDateTime.now(ZoneId.of("Europe/Stockholm")).hour)
 
         println("Woop, will rename to $name")
 
