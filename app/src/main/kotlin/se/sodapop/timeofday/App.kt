@@ -6,7 +6,6 @@ import dev.kord.rest.json.request.ChannelModifyPatchRequest
 import dev.kord.rest.service.RestClient
 import kotlinx.coroutines.ObsoleteCoroutinesApi
 import kotlinx.coroutines.channels.ticker
-import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.time.temporal.ChronoUnit
