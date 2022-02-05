@@ -7,6 +7,8 @@ import dev.kord.rest.service.RestClient
 import kotlinx.coroutines.ObsoleteCoroutinesApi
 import kotlinx.coroutines.channels.ticker
 import java.time.LocalDateTime
+import java.time.ZoneId
+import java.time.ZonedDateTime
 import java.time.temporal.ChronoUnit
 import java.util.concurrent.TimeUnit
 
@@ -15,7 +17,7 @@ suspend fun main() {
     val rest = RestClient(System.getenv("TOKEN"))
     val channelId = Snowflake(System.getenv("CHANNEL_ID"))
 
-    val now = LocalDateTime.now()
+    val now = ZonedDateTime.now(ZoneId.of("Europe/Stockholm"))
     val scheduleDate = now.truncatedTo(ChronoUnit.HOURS).plusHours(1)
     val timeUntilNextHour = now.until(scheduleDate, ChronoUnit.MILLIS)
     val everyHour = 3_600_000L
@@ -26,20 +28,25 @@ suspend fun main() {
 
     while (true) {
         println("Current hour is currently ${LocalDateTime.now().hour}")
+        println("Next hour, the channel name will be ${getChannelName(LocalDateTime.now().hour + 1)}")
 
         ticker.receive()
 
-        val name = when (LocalDateTime.now().hour) {
-            in 6..11 -> "Morgon-discord"
-            in 11..13 -> "Lunch-discord"
-            in 13..17 -> "Eftermiddags-discord"
-            in 17..21 -> "Kvälls-discord"
-            else -> "Natt-discord"
-        }
+        val name = getChannelName(LocalDateTime.now().hour)
 
         println("Woop, will rename to $name")
 
         rest.channel.patchChannel(channelId, ChannelModifyPatchRequest(Optional(name)))
+    }
+}
+
+private fun getChannelName(hour: Int): String {
+    return when (hour) {
+        in 6..11 -> "Morgon-discord"
+        in 11..13 -> "Lunch-discord"
+        in 13..17 -> "Eftermiddags-discord"
+        in 17..21 -> "Kvälls-discord"
+        else -> "Natt-discord"
     }
 }
 
