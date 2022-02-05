@@ -50,3 +50,11 @@ application {
     // Define the main class for the application.
     mainClass.set("se.sodapop.timeofday.AppKt")
 }
+
+tasks.withType<Jar> {
+    manifest {
+        attributes["Main-Class"] = "se.sodapop.timeofday.AppKt"
+    }
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    from(configurations.compileClasspath.map { config -> config.map { if (it.isDirectory) it else zipTree(it) } })
+}

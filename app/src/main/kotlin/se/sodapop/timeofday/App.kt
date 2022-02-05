@@ -10,7 +10,6 @@ import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
 import java.util.concurrent.TimeUnit
 
-
 @OptIn(ObsoleteCoroutinesApi::class)
 suspend fun main() {
     val rest = RestClient(System.getenv("TOKEN"))
