@@ -21,7 +21,7 @@ class DurationUnit private constructor(duration: Duration) : TemporalUnit {
     }
 
     override fun isDateBased(): Boolean {
-        return duration.nano == 0 && duration.seconds % SECONDS_PER_DAY == 0L
+        return duration.nano == 0 && duration.toSecondsPart() == 0
     }
 
     override fun isTimeBased(): Boolean {
