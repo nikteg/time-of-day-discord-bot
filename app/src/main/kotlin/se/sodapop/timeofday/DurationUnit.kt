@@ -1,7 +1,7 @@
 package se.sodapop.timeofday
+
 import java.time.Duration
 import java.time.temporal.Temporal
-
 import java.time.temporal.TemporalUnit
 
 class DurationUnit private constructor(duration: Duration) : TemporalUnit {
