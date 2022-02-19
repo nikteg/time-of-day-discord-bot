@@ -16,22 +16,23 @@ suspend fun main() {
     val rest = RestClient(System.getenv("TOKEN"))
     val channelId = Snowflake(System.getenv("CHANNEL_ID"))
 
-    val now = ZonedDateTime.now(ZoneId.of("Europe/Stockholm"))
-    val scheduleDate = now.truncatedTo(ChronoUnit.HOURS).plusHours(1)
+    val zone = ZoneId.of("Europe/Stockholm")
+    val now = ZonedDateTime.now(zone)
+    val halfHour = DurationUnit.ofMinutes(30)
+    val scheduleDate = now.truncatedTo(halfHour).plusMinutes(30)
     val timeUntilNextHour = now.until(scheduleDate, ChronoUnit.MILLIS)
-    val everyHour = 3_600_000L
+    val everyHalfHour = halfHour.duration.toMillis()
 
-    val ticker = ticker(everyHour, timeUntilNextHour)
+    val ticker = ticker(everyHalfHour, timeUntilNextHour)
 
     println("I will tick in ${formatRelativeTime(timeUntilNextHour)}")
 
     while (true) {
-        println("Current hour is currently ${ZonedDateTime.now(ZoneId.of("Europe/Stockholm")).hour}")
-        println("Next hour, the channel name will be ${getChannelName(ZonedDateTime.now(ZoneId.of("Europe/Stockholm")).hour + 1)}")
+        println("Time is currently ${ZonedDateTime.now(zone)}. Next half hour, the channel name will be ${getChannelName(ZonedDateTime.now(zone))}")
 
         ticker.receive()
 
-        val name = getChannelName(ZonedDateTime.now(ZoneId.of("Europe/Stockholm")).hour)
+        val name = getChannelName(ZonedDateTime.now(zone))
 
         println("Woop, will rename to $name")
 
@@ -39,12 +40,18 @@ suspend fun main() {
     }
 }
 
-private fun getChannelName(hour: Int): String {
-    return when (hour) {
-        in 6..11 -> "Morgon-discord"
-        in 11..13 -> "Lunch-discord"
-        in 13..17 -> "Eftermiddags-discord"
-        in 17..21 -> "Kvälls-discord"
+private fun getChannelName(dateTime: ZonedDateTime): String {
+    val time = dateTime.hour + dateTime.minute / 60.0
+    return getChannelName(time)
+}
+
+private fun getChannelName(time: Double): String {
+    return when {
+        time >= 21.0 -> "Natt-discord"
+        time >= 17.0 -> "Kvälls-discord"
+        time >= 13.5 -> "Eftermiddags-discord"
+        time >= 11.5 -> "Lunch-discord"
+        time >= 6 -> "Morgon-discord"
         else -> "Natt-discord"
     }
 }
