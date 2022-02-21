@@ -47,12 +47,12 @@ private fun getChannelName(dateTime: ZonedDateTime): String {
 
 private fun getChannelName(time: Double): String {
     return when {
-        time >= 21.0 -> "Natt-discord"
-        time >= 17.0 -> "Kvälls-discord"
-        time >= 13.5 -> "Eftermiddags-discord"
-        time >= 11.5 -> "Lunch-discord"
-        time >= 6 -> "Morgon-discord"
-        else -> "Natt-discord"
+        time >= 21.0 -> "Nattdiscord"
+        time >= 17.0 -> "Kvällsdiscord"
+        time >= 13.5 -> "Eftermiddagsdiscord"
+        time >= 11.5 -> "Lunchdiscord"
+        time >= 6 -> "Morgondiscord"
+        else -> "Nattdiscord"
     }
 }
 
