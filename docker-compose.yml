@@ -3,4 +3,6 @@ services:
     build: .
     pull_policy: build
     container_name: time-of-day-discord-bot
+    env_file:
+      - .env
     restart: unless-stopped
