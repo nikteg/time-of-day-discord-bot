@@ -1,63 +1,53 @@
+@file:OptIn(ExperimentalTime::class)
+
 package se.sodapop.timeofday
 
 import dev.kord.common.entity.Snowflake
 import dev.kord.common.entity.optional.Optional
 import dev.kord.rest.json.request.ChannelModifyPatchRequest
 import dev.kord.rest.service.RestClient
-import kotlinx.coroutines.ObsoleteCoroutinesApi
-import kotlinx.coroutines.channels.ticker
-import java.time.ZoneId
-import java.time.ZonedDateTime
-import java.time.temporal.ChronoUnit
-import java.util.concurrent.TimeUnit
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import kotlinx.datetime.LocalTime
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
+import kotlin.time.Clock
+import kotlin.time.ExperimentalTime
 
-@OptIn(ObsoleteCoroutinesApi::class)
-suspend fun main() {
+private suspend fun main() {
     val rest = RestClient(System.getenv("TOKEN"))
     val channelId = Snowflake(System.getenv("CHANNEL_ID"))
+    val zone = TimeZone.of("Europe/Stockholm")
 
-    val zone = ZoneId.of("Europe/Stockholm")
-    val now = ZonedDateTime.now(zone)
-    val halfHour = DurationUnit.ofMinutes(30)
-    val scheduleDate = now.truncatedTo(halfHour).plusMinutes(30)
-    val timeUntilNextHour = now.until(scheduleDate, ChronoUnit.MILLIS)
-    val everyHalfHour = halfHour.duration.toMillis()
+    val transitions =
+        Transitions(
+            listOf(
+                TimeTransition("Morgondiscord", LocalTime(6, 0)),
+                TimeTransition("Lunchdiscord", LocalTime(11, 30)),
+                TimeTransition("Eftermiddagsdiscord", LocalTime(13, 30)),
+                TimeTransition("Kvällsdiscord", LocalTime(17, 0)),
+                TimeTransition("Nattdiscord", LocalTime(21, 0)),
+            ),
+        )
 
-    val ticker = ticker(everyHalfHour, timeUntilNextHour)
+    val getNow = { Clock.System.now() }
 
-    println("I will tick in ${formatRelativeTime(timeUntilNextHour)}")
-
-    while (true) {
-        println("Time is currently ${ZonedDateTime.now(zone)}. Next half hour, the channel name will be ${getChannelName(ZonedDateTime.now(zone))}")
-
-        ticker.receive()
-
-        val name = getChannelName(ZonedDateTime.now(zone))
-
-        println("Woop, will rename to $name")
-
-        rest.channel.patchChannel(channelId, ChannelModifyPatchRequest(Optional(name)))
-    }
-}
-
-private fun getChannelName(dateTime: ZonedDateTime): String {
-    val time = dateTime.hour + dateTime.minute / 60.0
-    return getChannelName(time)
-}
-
-private fun getChannelName(time: Double): String {
-    return when {
-        time >= 21.0 -> "Nattdiscord"
-        time >= 17.0 -> "Kvällsdiscord"
-        time >= 13.5 -> "Eftermiddagsdiscord"
-        time >= 11.5 -> "Lunchdiscord"
-        time >= 6 -> "Morgondiscord"
-        else -> "Nattdiscord"
-    }
-}
-
-fun formatRelativeTime(millis: Long): String {
-    return String.format("%02d:%02d:%02d", TimeUnit.MILLISECONDS.toHours(millis),
-            TimeUnit.MILLISECONDS.toMinutes(millis) % TimeUnit.HOURS.toMinutes(1),
-            TimeUnit.MILLISECONDS.toSeconds(millis) % TimeUnit.MINUTES.toSeconds(1))
+    sleepLoop(
+        getSleepLoopInfo = { getSleepLoopInfo(getNow(), zone, transitions) },
+        onTick = { info ->
+            println("Changing name to '${info.currentName}'")
+            withContext(Dispatchers.IO) {
+                rest.channel.patchChannel(
+                    channelId,
+                    ChannelModifyPatchRequest(Optional(info.currentName)),
+                )
+            }
+            val now = getNow()
+            val localTime = now.toLocalDateTime(zone)
+            val nextUpdate = now + info.sleepDuration
+            val nextLocalTime = nextUpdate.toLocalDateTime(zone)
+            println("Current time is '$localTime'")
+            println("Next update scheduled at '$nextLocalTime' (in '${info.sleepDuration}') with name '${info.nextName}'")
+        },
+    )
 }
