@@ -9,7 +9,7 @@
 
 plugins {
     // Apply the org.jetbrains.kotlin.jvm Plugin to add support for Kotlin.
-    id("org.jetbrains.kotlin.jvm") version "1.6.10"
+    id("org.jetbrains.kotlin.jvm") version "2.2.0"
 
     // Apply the application plugin to add support for building a CLI application in Java.
     application
@@ -26,18 +26,13 @@ dependencies {
     implementation(platform("org.jetbrains.kotlin:kotlin-bom"))
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
 
-    implementation("dev.kord:kord-core:0.8.0-M8")
-    implementation("org.slf4j:slf4j-simple:1.7.35")
-}
+    implementation("dev.kord:kord-core:0.17.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.7.1")
+    implementation("org.slf4j:slf4j-simple:2.0.17")
 
-testing {
-    suites {
-        // Configure the built-in test suite
-        val test by getting(JvmTestSuite::class) {
-            // Use Kotlin Test test framework
-            useKotlinTest()
-        }
-    }
+    testImplementation("org.jetbrains.kotlin:kotlin-test:2.2.20")
+    testImplementation("org.jetbrains.kotlin:kotlin-test-junit:2.2.20")
+    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.10.2")
 }
 
 application {
@@ -51,4 +46,8 @@ tasks.withType<Jar> {
     }
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
     from(configurations.compileClasspath.map { config -> config.map { if (it.isDirectory) it else zipTree(it) } })
+}
+
+kotlin {
+  jvmToolchain(21)
 }
