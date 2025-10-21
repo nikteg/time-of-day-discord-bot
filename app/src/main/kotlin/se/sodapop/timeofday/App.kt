@@ -35,7 +35,7 @@ private suspend fun main() {
     sleepLoop(
         getSleepLoopInfo = { getSleepLoopInfo(getNow(), zone, transitions) },
         onTick = { info ->
-            println("Changing name to '${info.currentName}'")
+            println("Changing name to '${info.currentName}' for channel with ID '$channelId'")
             withContext(Dispatchers.IO) {
                 rest.channel.patchChannel(
                     channelId,
