@@ -1,11 +1,11 @@
-FROM --platform=linux/amd64 gradle:jdk21 AS build
+FROM --platform=$BUILDPLATFORM gradle:jdk21 AS build
 COPY . /home/gradle
 RUN gradle build
 
-FROM --platform=linux/amd64 openjdk:21
+FROM eclipse-temurin:21-jre
 WORKDIR /app
 COPY --from=build /home/gradle/app/build/libs/app.jar .
-RUN groupadd -r -g 1000 user && useradd -r -g user -u 1000 user
+RUN userdel -r ubuntu 2>/dev/null; groupadd -r -g 1000 user && useradd -r -g user -u 1000 user
 RUN chown -R user:user /app
 USER user
-ENTRYPOINT exec java -jar app.jar
+ENTRYPOINT ["java", "-jar", "app.jar"]
