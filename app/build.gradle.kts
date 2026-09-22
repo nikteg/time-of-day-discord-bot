@@ -19,14 +19,15 @@ repositories {
     // Use Maven Central for resolving dependencies.
     mavenCentral()
 
-    maven("https://oss.sonatype.org/content/repositories/snapshots")
+    // Kord snapshots (Sonatype Central). Remove once kord-core 0.19.0 is released.
+    maven("https://central.sonatype.com/repository/maven-snapshots/")
 }
 
 dependencies {
     implementation(platform("org.jetbrains.kotlin:kotlin-bom"))
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
 
-    implementation("dev.kord:kord-core:0.17.0")
+    implementation("dev.kord:kord-core:0.19.0-SNAPSHOT")
     implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.7.1")
     implementation("org.slf4j:slf4j-simple:2.0.17")
 
